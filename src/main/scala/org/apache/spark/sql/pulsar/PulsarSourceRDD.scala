@@ -40,6 +40,7 @@ private[pulsar] abstract class PulsarSourceRDDBase(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends RDD[InternalRow](sc, Nil) {
 
@@ -63,6 +64,8 @@ private[pulsar] abstract class PulsarSourceRDDBase(
     lazy val reader = CachedPulsarClient
       .getOrCreate(clientConf)
       .newReader(schema)
+      .subscriptionName(predefinedSubscription.orNull)
+      .subscriptionRolePrefix(subscriptionNamePrefix)
       .topic(topic)
       .startMessageId(startOffset)
       .startMessageIdInclusive()
@@ -149,6 +152,7 @@ private[pulsar] class PulsarSourceRDD(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends PulsarSourceRDDBase(
       sc,
@@ -159,6 +163,7 @@ private[pulsar] class PulsarSourceRDD(
       pollTimeoutMs,
       failOnDataLoss,
       subscriptionNamePrefix,
+      predefinedSubscription,
       jsonOptions) {
 
   override def getPreferredLocations(split: Partition): Seq[String] = {
@@ -191,6 +196,7 @@ private[pulsar] class PulsarSourceRDD4Batch(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends PulsarSourceRDDBase(
       sc,
@@ -201,6 +207,7 @@ private[pulsar] class PulsarSourceRDD4Batch(
       pollTimeoutMs,
       failOnDataLoss,
       subscriptionNamePrefix,
+      predefinedSubscription,
       jsonOptions) {
 
   override def compute(split: Partition, context: TaskContext): Iterator[InternalRow] = {

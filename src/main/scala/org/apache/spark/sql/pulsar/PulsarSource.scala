@@ -36,6 +36,7 @@ private[pulsar] class PulsarSource(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends Source
     with Logging {
@@ -146,6 +147,7 @@ private[pulsar] class PulsarSource(
       pollTimeoutMs,
       failOnDataLoss,
       subscriptionNamePrefix,
+      predefinedSubscription,
       jsonOptions)
 
     logInfo(

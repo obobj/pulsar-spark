@@ -48,6 +48,7 @@ class PulsarContinuousReader(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends ContinuousStream
     with Logging {
@@ -106,6 +107,7 @@ class PulsarContinuousReader(
         pollTimeoutMs,
         failOnDataLoss,
         subscriptionNamePrefix,
+        predefinedSubscription,
         jsonOptions).asInstanceOf[InputPartition]
     }.toArray
   }
@@ -129,6 +131,7 @@ class PulsarContinuousReader(
           pollTimeoutMs,
           failOnDataLoss,
           subscriptionNamePrefix,
+          predefinedSubscription,
           jsonOptions)
       }
     }
@@ -160,12 +163,14 @@ private[pulsar] class PulsarContinuousTopic(
     var pollTimeoutMs: Int,
     var failOnDataLoss: Boolean,
     var subscriptionNamePrefix: String,
+    var predefinedSubscription: Option[String],
     var jsonOptions: JSONOptionsInRead)
     extends InputPartition
     with Externalizable {
 
   def this() =
-    this(null, null, null, null, null, null, 0, false, null, null) // For deserialization only
+    // For deserialization only
+    this(null, null, null, null, null, null, 0, false, null, null, null)
 
   override def writeExternal(out: ObjectOutput): Unit = {
     out.writeUTF(topic)
@@ -230,6 +235,7 @@ class PulsarContinuousTopicReader(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends ContinuousPartitionReader[InternalRow] {
 
@@ -240,6 +246,8 @@ class PulsarContinuousTopicReader(
   private val reader = CachedPulsarClient
     .getOrCreate(clientConf)
     .newReader(schema)
+    .subscriptionName(predefinedSubscription.orNull)
+    .subscriptionRolePrefix(subscriptionNamePrefix)
     .topic(topic)
     .startMessageId(startingOffsets)
     .startMessageIdInclusive()

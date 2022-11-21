@@ -37,6 +37,7 @@ private[pulsar] class PulsarRelation(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends BaseRelation
     with TableScan
@@ -92,6 +93,7 @@ private[pulsar] class PulsarRelation(
       pollTimeoutMs,
       failOnDataLoss,
       subscriptionNamePrefix,
+      predefinedSubscription,
       jsonOptions)
     sqlContext.internalCreateDataFrame(rdd.setName("pulsar"), schema).rdd
   }

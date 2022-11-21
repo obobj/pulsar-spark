@@ -41,6 +41,7 @@ private[pulsar] class PulsarMicroBatchReader(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends MicroBatchStream
     with Logging {
@@ -120,6 +121,7 @@ private[pulsar] class PulsarMicroBatchReader(
         pollTimeoutMs,
         failOnDataLoss,
         subscriptionNamePrefix,
+        predefinedSubscription,
         jsonOptions).asInstanceOf[InputPartition]
     }.toArray
   }
@@ -149,6 +151,7 @@ private[pulsar] class PulsarMicroBatchReader(
         pollTimeoutMs,
         failOnDataLoss,
         subscriptionNamePrefix,
+        predefinedSubscription,
         jsonOptions)
     }
   }
@@ -171,6 +174,7 @@ case class PulsarMicroBatchInputPartition(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends InputPartition {
   override def preferredLocations(): Array[String] = range.preferredLoc.toArray
@@ -193,6 +197,7 @@ case class PulsarMicroBatchInputPartitionReader(
     pollTimeoutMs: Int,
     failOnDataLoss: Boolean,
     subscriptionNamePrefix: String,
+    predefinedSubscription: Option[String],
     jsonOptions: JSONOptionsInRead)
     extends PartitionReader[InternalRow]
     with Logging {
@@ -210,6 +215,8 @@ case class PulsarMicroBatchInputPartitionReader(
   val reader = CachedPulsarClient
     .getOrCreate(clientConf)
     .newReader(schema)
+    .subscriptionName(predefinedSubscription.orNull)
+    .subscriptionRolePrefix(subscriptionNamePrefix)
     .startMessageId(start)
     .startMessageIdInclusive()
     .topic(tp)
